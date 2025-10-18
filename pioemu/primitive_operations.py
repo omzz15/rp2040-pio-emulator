@@ -118,8 +118,10 @@ def write_to_pin_directions(
 
 def write_to_pins(data_supplier: Callable[[State], int], state: State) -> State:
     """Copies the given data into the pin values register."""
-
-    return replace(state, pin_values=data_supplier(state) & 0xFFFF_FFFF)
+    # Only modify output pins
+    mask = state.pin_directions & 0xFFFF_FFFF
+    ignore_mask = ~state.pin_directions & 0xFFFF_FFFF
+    return replace(state, pin_values=state.pin_values & ignore_mask | (data_supplier(state) & mask))
 
 
 def write_to_program_counter(
